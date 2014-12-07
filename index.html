@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>whatup</title>
+
+<meta name="viewport" content="width=device-width,height=device-height,initial-scale=1"/>
+<link rel="stylesheet" href="jquery-ui.min.css">
+	<script src="jquery-ui.min.js"></script>
+    <script type="text/javascript" charset="utf-8" src="phonegap.js"></script>
+    <script type="text/javascript" charset="utf-8">
+    // Wait for device API libraries to load
+    //
+    document.addEventListener("deviceready", onDeviceReady, false);
+
+    // device APIs are available
+    //
+    function onDeviceReady() {
+
+    }
+
+
+//Regular Write Code
+
+    function writeFile() {
+	alert("Write File");
+        window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, gotFS, fail);
+
+    }
+
+    function gotFS(fileSystem) {
+	alert("GotFS");
+	var filename = document.getElementById("selectWorkout").value;
+        fileSystem.root.getFile(filename, {create: true, exclusive: false}, gotFileEntry, fail);
+    }
+
+    function gotFileEntry(fileEntry) {
+	alert("GotFileEntry");
+        fileEntry.createWriter(gotFileWriter, fail);
+    }
+
+    function gotFileWriter(writer) {
+	alert("Got FileWriter");
+
+	var text = document.getElementById("reps").value;
+	var text2 = document.getElementById("lbs").value;
+	writer.onwriteend = function(evt) {
+		
+	    document.getElementById("output").innerHTML = "File Write Complete!";
+	};
+
+        writer.write("number of reps	" + text + "	amount of weight	" + text2);
+
+    }
+
+    function fail(error) {
+        alert("File Error:" + error.code);
+    }
+
+//Append Code
+
+    function appendFile() {
+        window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, gotFSAppend, fail);
+
+    }
+
+    function gotFSAppend(fileSystem) {
+	var filename = document.getElementById("selectWorkout").value;
+        fileSystem.root.getFile(filename, {create: true, exclusive: false}, gotFileEntryAppend, fail);
+    }
+
+    function gotFileEntryAppend(fileEntry) {
+        fileEntry.createWriter(gotFileWriterAppend, fail);
+    }
+
+    function gotFileWriterAppend(writer) {
+
+	var text = document.getElementById("reps").value;
+	var text2 = document.getElementById("lbs").value;
+	
+	writer.onwriteend = function(evt) {
+		
+	    document.getElementById("output").innerHTML = "File append Complete!";
+	};
+
+	writer.seek(writer.length);
+        writer.write(text + text2);
+
+    }
+
+
+
+
+//Read and Show Code
+
+    function showFileText() {
+	window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, gotFSRead, fail);
+    }
+
+    function gotFSRead(fileSystem) {
+	var filename = document.getElementById("selectWorkout").value;
+        fileSystem.root.getFile(filename, null, gotFileEntryRead, fail);
+    }
+
+    function gotFileEntryRead(fileEntry) {
+        fileEntry.file(gotFileRead, fail);
+    }
+
+    function gotFileRead(file){
+        
+        readAsText(file);
+    }
+
+    function readAsText(file) {
+        var reader = new FileReader();
+        reader.onloadend = function(evt) {
+	    var value = evt.target.result;
+	    document.getElementById("output").innerHTML = value;
+        };
+        reader.readAsText(file);
+    }
+	
+	</script>
+  
+</head>
+<body>
+
+<form><!--action="store.php" id="form" action="POST"-->
+
+<!--need select for workout,
+	field for reps
+	field for weight
+	-->
+	
+<p id="output">stuff</p>
+
+
+<div data-role="field contain">
+	<label for="selectWorkout">select workout</label>
+	<select name="selectWorkout" id="selectWorkout">
+		<option data-placeholder="true"></option>
+		<option value="bench press">Bench Press</option>
+	</select>	
+</div>
+<div data-role="field contain">
+	<label for="reps"># of reps</label>
+	<input type="text" name="reps" id="reps" value="" />
+</div>
+
+<div data-role="field contain">
+	<label for="lbs">weight(in lbs)</label>
+	<input type="text" name="lbs" id="lbs" value="" />
+</div>
+
+<!--<input type="submit" value="Submit Form" id="submit" data-theme="a" />-->
+</form>
+
+<button onclick="writeFile();">Save text to file</button>
+<button onclick="appendFile();">Append to file</button>
+<button onclick="showFileText();">Read and Show File</button>
+
+</body>
+</html>
